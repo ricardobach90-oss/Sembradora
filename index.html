@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="es-UY">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Regulación de sembradora</title>
+<meta name="theme-color" content="#1e4d3a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --ink: #17231c;
+    --muted: #55655b;
+    --paper: #eef1ec;
+    --surface: #ffffff;
+    --line: #d3dad2;
+    --primary: #1e4d3a;
+    --primary-ink: #ffffff;
+    --input-bg: #e3edfb;
+    --input-line: #7fa6e0;
+    --ok: #1f7a3d;
+    --ok-bg: #e3f3e8;
+    --warn: #8a5a00;
+    --warn-bg: #fdf0d2;
+    --bad: #b42318;
+    --bad-bg: #fde8e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e8efe9;
+      --muted: #9db0a3;
+      --paper: #111a15;
+      --surface: #1a261f;
+      --line: #2c3c32;
+      --primary: #5fbf8f;
+      --primary-ink: #0d1a12;
+      --input-bg: #1d3350;
+      --input-line: #4d78b8;
+      --ok: #6fd39a;
+      --ok-bg: #163524;
+      --warn: #f0c060;
+      --warn-bg: #3a2e12;
+      --bad: #ff8f84;
+      --bad-bg: #40201d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    line-height: 1.4;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    font-variant-numeric: tabular-nums;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+  h1 { font-size: 1.35rem; margin: 4px 0 2px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 16px; }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; }
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  label, .lbl { display: block; font-size: 0.92rem; color: var(--muted); margin-bottom: 4px; }
+  .field { position: relative; }
+  .field input {
+    width: 100%;
+    font: inherit;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--input-bg);
+    border: 2px solid var(--input-line);
+    border-radius: 10px;
+    padding: 10px 64px 10px 12px;
+    min-height: 50px;
+  }
+  .field input:focus { outline: 3px solid var(--primary); outline-offset: 1px; }
+  .field .suf {
+    position: absolute; right: 12px; bottom: 13px;
+    color: var(--muted); font-size: 0.9rem; pointer-events: none;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .chip, .seg button {
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); font-weight: 600; }
+  .chip:focus-visible, .seg button:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+  .seg { display: flex; gap: 0; margin-bottom: 12px; }
+  .seg button { flex: 1; border-radius: 0; margin-left: -1.5px; }
+  .seg button:first-child { border-radius: 10px 0 0 10px; margin-left: 0; }
+  .seg button:last-child { border-radius: 0 10px 10px 0; }
+  .seg button[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); font-weight: 600; }
+  .tabs { position: sticky; top: 0; z-index: 2; background: var(--paper); padding: 6px 0 10px; }
+  .tabs .seg { margin: 0; }
+  .tabs .seg button { font-size: 1.05rem; min-height: 50px; }
+  .base { margin-top: 10px; color: var(--muted); font-size: 0.92rem; }
+  .base b { color: var(--ink); }
+  dl.res { margin: 14px 0 0; }
+  dl.res > div {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 9px 0; border-top: 1px solid var(--line); gap: 12px;
+  }
+  dl.res dt { color: var(--muted); font-size: 0.95rem; }
+  dl.res dd { margin: 0; font-size: 1.2rem; font-weight: 700; text-align: right; }
+  dl.res dd small { font-weight: 400; color: var(--muted); font-size: 0.8rem; margin-left: 4px; }
+  .verdict {
+    margin-top: 14px; padding: 14px; border-radius: 12px;
+    border-left: 8px solid var(--line); background: var(--paper);
+    display: flex; gap: 14px; align-items: center;
+  }
+  .verdict .pct { font-size: 1.6rem; font-weight: 800; line-height: 1; white-space: nowrap; flex: 0 0 auto; }
+  .verdict .t { font-weight: 700; }
+  .verdict .d { color: var(--muted); font-size: 0.92rem; }
+  .verdict[data-state="ok"]   { background: var(--ok-bg);   border-left-color: var(--ok); }
+  .verdict[data-state="ok"] .pct, .verdict[data-state="ok"] .t { color: var(--ok); }
+  .verdict[data-state="warn"] { background: var(--warn-bg); border-left-color: var(--warn); }
+  .verdict[data-state="warn"] .pct, .verdict[data-state="warn"] .t { color: var(--warn); }
+  .verdict[data-state="bad"]  { background: var(--bad-bg);  border-left-color: var(--bad); }
+  .verdict[data-state="bad"] .pct, .verdict[data-state="bad"] .t { color: var(--bad); }
+  .verdict[data-state="idle"] .pct { color: var(--muted); }
+  .tol { display: flex; align-items: center; gap: 12px; }
+  .tol .field { flex: 0 0 130px; }
+  .tol .field input { padding-right: 44px; }
+  .tol p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+  [hidden] { display: none !important; }
+  footer { color: var(--muted); font-size: 0.82rem; text-align: center; margin-top: 8px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .verdict { transition: background-color .2s, border-color .2s; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Regulación de sembradora</h1>
+  <p class="sub">Escribí solo en las celdas azules.</p>
+
+  <section class="card" aria-labelledby="h-dist">
+    <h2 id="h-dist">Distancia entre surcos</h2>
+    <div class="chips" id="chips" role="group" aria-label="Distancias comunes"></div>
+    <div class="field">
+      <label for="dist">Otra distancia</label>
+      <input id="dist" data-k="dist" inputmode="decimal" autocomplete="off" placeholder="0">
+      <span class="suf">cm</span>
+    </div>
+    <p class="base">Metros de surco por hectárea: <b id="mha">—</b></p>
+  </section>
+
+  <div class="tabs">
+    <div class="seg" role="group" aria-label="Sección">
+      <button type="button" data-tab="sem">Semilla</button>
+      <button type="button" data-tab="fert">Fertilizante</button>
+    </div>
+  </div>
+
+  <!-- ============ SEMILLA ============ -->
+  <div id="panel-sem">
+    <section class="card" aria-labelledby="h-so">
+      <h2 id="h-so">Objetivo de semilla</h2>
+      <div class="seg" data-tog="sUnit" role="group" aria-label="Unidad del objetivo">
+        <button type="button" data-v="ha">Semillas por ha</button>
+        <button type="button" data-v="m">Semillas por metro</button>
+      </div>
+      <div class="field">
+        <label for="sObj" id="sObjL">Semillas por hectárea</label>
+        <input id="sObj" data-k="sObj" inputmode="decimal" autocomplete="off" placeholder="0">
+        <span class="suf" id="sObjS">sem/ha</span>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="pms">Peso de mil</label>
+          <input id="pms" data-k="pms" inputmode="decimal" autocomplete="off" placeholder="0">
+          <span class="suf">g</span>
+        </div>
+        <div class="field">
+          <label for="sMetros">Metros a sembrar</label>
+          <input id="sMetros" data-k="sMetros" inputmode="decimal" autocomplete="off" placeholder="100">
+          <span class="suf">m</span>
+        </div>
+      </div>
+      <dl class="res">
+        <div><dt>Semillas por hectárea</dt><dd id="o_sHa">—</dd></div>
+        <div><dt>Semillas por metro</dt><dd id="o_sM">—</dd></div>
+        <div><dt id="o_sNL">Semillas en 100 m</dt><dd id="o_sN">—</dd></div>
+        <div><dt>Semilla en kg/ha</dt><dd id="o_sKg">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="h-sm">
+      <h2 id="h-sm">Lo que contaste en el lote</h2>
+      <div class="grid2" style="margin-top:0">
+        <div class="field">
+          <label for="sCont">Semillas contadas</label>
+          <input id="sCont" data-k="sCont" inputmode="decimal" autocomplete="off" placeholder="0">
+          <span class="suf">sem</span>
+        </div>
+        <div class="field">
+          <label for="sContM">En cuántos metros</label>
+          <input id="sContM" data-k="sContM" inputmode="decimal" autocomplete="off" placeholder="1">
+          <span class="suf">m</span>
+        </div>
+      </div>
+      <dl class="res">
+        <div><dt>Semillas por metro</dt><dd id="m_sM">—</dd></div>
+        <div><dt>Semillas por hectárea</dt><dd id="m_sHa">—</dd></div>
+        <div><dt>Semilla en kg/ha</dt><dd id="m_sKg">—</dd></div>
+      </dl>
+      <div class="verdict" id="v_s" data-state="idle" role="status">
+        <div class="pct">—</div>
+        <div><div class="t"></div><div class="d"></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ FERTILIZANTE ============ -->
+  <div id="panel-fert" hidden>
+    <section class="card" aria-labelledby="h-fo">
+      <h2 id="h-fo">Objetivo de fertilizante</h2>
+      <div class="seg" data-tog="fUnit" role="group" aria-label="Unidad del objetivo">
+        <button type="button" data-v="kgha">kg por ha</button>
+        <button type="button" data-v="gm">Gramos por metro</button>
+      </div>
+      <div class="grid2" style="margin-top:0">
+        <div class="field">
+          <label for="fObj" id="fObjL">Fertilizante por hectárea</label>
+          <input id="fObj" data-k="fObj" inputmode="decimal" autocomplete="off" placeholder="0">
+          <span class="suf" id="fObjS">kg/ha</span>
+        </div>
+        <div class="field">
+          <label for="fMetros">Metros a recolectar</label>
+          <input id="fMetros" data-k="fMetros" inputmode="decimal" autocomplete="off" placeholder="100">
+          <span class="suf">m</span>
+        </div>
+      </div>
+      <dl class="res">
+        <div><dt>Fertilizante por hectárea</dt><dd id="o_fKg">—</dd></div>
+        <div><dt>Gramos por metro de surco</dt><dd id="o_fG">—</dd></div>
+        <div><dt id="o_fNL">Gramos en 100 m</dt><dd id="o_fN">—</dd></div>
+      </dl>
+    </section>
+
+    <section class="card" aria-labelledby="h-fm">
+      <h2 id="h-fm">Lo que juntaste en el lote</h2>
+      <div class="grid2" style="margin-top:0">
+        <div class="field">
+          <label for="fGr">Gramos juntados</label>
+          <input id="fGr" data-k="fGr" inputmode="decimal" autocomplete="off" placeholder="0">
+          <span class="suf">g</span>
+        </div>
+        <div class="field">
+          <label for="fGrM">En cuántos metros</label>
+          <input id="fGrM" data-k="fGrM" inputmode="decimal" autocomplete="off" placeholder="1">
+          <span class="suf">m</span>
+        </div>
+      </div>
+      <dl class="res">
+        <div><dt>Gramos por metro de surco</dt><dd id="m_fG">—</dd></div>
+        <div><dt>Fertilizante por hectárea</dt><dd id="m_fKg">—</dd></div>
+      </dl>
+      <div class="verdict" id="v_f" data-state="idle" role="status">
+        <div class="pct">—</div>
+        <div><div class="t"></div><div class="d"></div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="tol">
+      <div class="field">
+        <label for="tol">Tolerancia</label>
+        <input id="tol" data-k="tol" inputmode="decimal" autocomplete="off" placeholder="5">
+        <span class="suf">±%</span>
+      </div>
+      <p>Verde si estás dentro de la tolerancia, ámbar hasta el doble, rojo más allá.</p>
+    </div>
+  </section>
+
+  <footer>Los datos quedan guardados en este dispositivo.</footer>
+</main>
+
+<script>
+(() => {
+  const KEY = 'regulacion-sembradora-v1';
+  const DISTS = [19, 26, 35, 38, 50.8, 52.5, 70, 76];
+
+  const defaults = {
+    dist: '', tol: '5', tab: 'sem',
+    sUnit: 'ha', sObj: '', pms: '', sMetros: '100', sCont: '', sContM: '1',
+    fUnit: 'kgha', fObj: '', fMetros: '100', fGr: '', fGrM: '1'
+  };
+  let S = { ...defaults };
+  try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  const $ = id => document.getElementById(id);
+  const num = v => {
+    if (v === '' || v == null) return null;
+    const n = parseFloat(String(v).trim().replace(',', '.'));
+    return Number.isFinite(n) ? n : null;
+  };
+  const pos = v => (v != null && v > 0 ? v : null);
+  const fmt = (n, d = 0) => n == null || !Number.isFinite(n) ? '—'
+    : n.toLocaleString('es-UY', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const smart = n => n == null ? '—' : fmt(n, Math.abs(n) >= 100 ? 0 : Math.abs(n) >= 10 ? 1 : 2);
+  const withUnit = (n, u, d) => n == null ? '—' : `${d === undefined ? smart(n) : fmt(n, d)}<small>${u}</small>`;
+  const put = (id, html) => { $(id).innerHTML = html; };
+
+  // --- chips de distancia
+  const chips = $('chips');
+  DISTS.forEach(d => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.d = d;
+    b.textContent = String(d).replace('.', ',');
+    b.addEventListener('click', () => {
+      S.dist = String(d).replace('.', ',');
+      $('dist').value = S.dist;
+      save(); render();
+    });
+    chips.appendChild(b);
+  });
+
+  // --- inputs
+  document.querySelectorAll('[data-k]').forEach(el => {
+    el.value = S[el.dataset.k] ?? '';
+    el.addEventListener('input', () => { S[el.dataset.k] = el.value; save(); render(); });
+  });
+
+  // --- toggles de unidad
+  document.querySelectorAll('[data-tog]').forEach(group => {
+    group.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => { S[group.dataset.tog] = b.dataset.v; save(); render(); });
+    });
+  });
+
+  // --- pestañas
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.addEventListener('click', () => { S.tab = b.dataset.tab; save(); render(); window.scrollTo({ top: 0 }); });
+  });
+
+  function verdict(id, real, obj, unitLabel) {
+    const el = $(id);
+    const pctEl = el.querySelector('.pct'), t = el.querySelector('.t'), d = el.querySelector('.d');
+    if (real == null || obj == null) {
+      el.dataset.state = 'idle';
+      pctEl.textContent = '—';
+      t.textContent = obj == null ? 'Falta cargar el objetivo' : 'Falta cargar lo medido';
+      d.textContent = '';
+      return;
+    }
+    const diff = real - obj;
+    const pct = Math.round((diff / obj) * 1000) / 10;
+    const tol = Math.abs(num(S.tol) ?? 5);
+    const a = Math.abs(pct);
+    const state = a <= tol ? 'ok' : a <= tol * 2 ? 'warn' : 'bad';
+    el.dataset.state = state;
+    pctEl.textContent = (pct > 0 ? '+' : pct < 0 ? '−' : '') + fmt(a, 1) + ' %';
+    t.textContent = state === 'ok' ? 'Dentro del objetivo'
+      : state === 'warn' ? 'Algo desviado' : 'Muy lejos del objetivo';
+    d.textContent = pct === 0 ? 'Justo en el objetivo.'
+      : `${fmt(Math.abs(diff), Math.abs(diff) >= 100 ? 0 : 1)} ${unitLabel} ${diff < 0 ? 'por debajo' : 'por encima'} del objetivo.`;
+  }
+
+  function render() {
+    // pestañas
+    document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === S.tab));
+    $('panel-sem').hidden = S.tab !== 'sem';
+    $('panel-fert').hidden = S.tab !== 'fert';
+
+    // distancia
+    const dist = pos(num(S.dist));
+    document.querySelectorAll('.chip').forEach(c =>
+      c.setAttribute('aria-pressed', dist != null && Math.abs(dist - parseFloat(c.dataset.d)) < 1e-9));
+    const mha = dist ? 1e6 / dist : null;          // = 10000 / distancia_cm * 100
+    put('mha', mha ? fmt(mha, 0) + ' m' : '—');
+
+    // toggles
+    document.querySelectorAll('[data-tog]').forEach(g => g.querySelectorAll('button').forEach(b =>
+      b.setAttribute('aria-pressed', S[g.dataset.tog] === b.dataset.v)));
+    const sHaMode = S.sUnit === 'ha';
+    $('sObjL').textContent = sHaMode ? 'Semillas por hectárea' : 'Semillas por metro lineal';
+    $('sObjS').textContent = sHaMode ? 'sem/ha' : 'sem/m';
+    const fKgMode = S.fUnit === 'kgha';
+    $('fObjL').textContent = fKgMode ? 'Fertilizante por hectárea' : 'Gramos por metro de surco';
+    $('fObjS').textContent = fKgMode ? 'kg/ha' : 'g/m';
+
+    // ===== SEMILLA: objetivo
+    const pms = pos(num(S.pms));
+    const sN = pos(num(S.sMetros));
+    const sv = num(S.sObj);
+    let sHa = null, sM = null;
+    if (sv != null && mha) {
+      if (sHaMode) { sHa = sv; sM = sv / mha; } else { sM = sv; sHa = sv * mha; }
+    }
+    put('o_sHa', withUnit(sHa, 'sem/ha', 0));
+    put('o_sM', withUnit(sM, 'sem/m'));
+    $('o_sNL').textContent = `Semillas en ${sN ? fmt(sN, sN % 1 ? 1 : 0) : '…'} m`;
+    put('o_sN', sM != null && sN ? withUnit(sM * sN, 'sem') : '—');
+    put('o_sKg', sHa != null && pms ? withUnit(sHa * pms / 1e6, 'kg/ha', 1) : '—');
+
+    // ===== SEMILLA: medido
+    const cont = num(S.sCont), contM = pos(num(S.sContM));
+    let rM = null, rHa = null;
+    if (cont != null && contM && mha) { rM = cont / contM; rHa = rM * mha; }
+    put('m_sM', withUnit(rM, 'sem/m'));
+    put('m_sHa', withUnit(rHa, 'sem/ha', 0));
+    put('m_sKg', rHa != null && pms ? withUnit(rHa * pms / 1e6, 'kg/ha', 1) : '—');
+    verdict('v_s', rHa, pos(sHa), 'sem/ha');
+
+    // ===== FERTILIZANTE: objetivo
+    const fN = pos(num(S.fMetros));
+    const fv = num(S.fObj);
+    let fKg = null, fG = null;
+    if (fv != null && mha) {
+      if (fKgMode) { fKg = fv; fG = fv / mha * 1000; } else { fG = fv; fKg = fv * mha / 1000; }
+    }
+    put('o_fKg', withUnit(fKg, 'kg/ha', 1));
+    put('o_fG', withUnit(fG, 'g/m'));
+    $('o_fNL').textContent = `Gramos en ${fN ? fmt(fN, fN % 1 ? 1 : 0) : '…'} m`;
+    put('o_fN', fG != null && fN ? withUnit(fG * fN, 'g', 0) : '—');
+
+    // ===== FERTILIZANTE: medido
+    const gr = num(S.fGr), grM = pos(num(S.fGrM));
+    let rG = null, rKg = null;
+    if (gr != null && grM && mha) { rG = gr / grM; rKg = rG * mha / 1000; }
+    put('m_fG', withUnit(rG, 'g/m'));
+    put('m_fKg', withUnit(rKg, 'kg/ha', 1));
+    verdict('v_f', rKg, pos(fKg), 'kg/ha');
+  }
+
+  render();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>

@@ -58,7 +58,7 @@
     font-variant-numeric: tabular-nums;
   }
   main { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
-  h1 { font-size: 1.35rem; margin: 4px 0 2px; letter-spacing: -0.01em; }
+  h1 { font-size: 1.35rem; margin: 4px 0 16px; letter-spacing: -0.01em; }
   .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 16px; }
   h2 { font-size: 1.05rem; margin: 0 0 12px; }
   section.card {
@@ -138,6 +138,24 @@
   .tol .field { flex: 0 0 130px; }
   .tol .field input { padding-right: 44px; }
   .tol p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+  details.adv { padding: 0; }
+  details.adv summary {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 16px; min-height: 52px; cursor: pointer; list-style: none; font-weight: 700;
+  }
+  details.adv summary::-webkit-details-marker { display: none; }
+  details.adv summary:focus-visible { outline: 3px solid var(--primary); outline-offset: -3px; border-radius: 14px; }
+  details.adv summary .right { display: flex; align-items: center; gap: 10px; }
+  details.adv summary .right::after { content: "▾"; color: var(--muted); transition: transform .15s; }
+  details.adv[open] summary .right::after { transform: rotate(180deg); }
+  .vc { white-space: nowrap; font-size: 0.9rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--paper); color: var(--muted); }
+  .vc[data-state="warn"] { background: var(--warn-bg); color: var(--warn); }
+  .vc[data-state="bad"] { background: var(--bad-bg); color: var(--bad); }
+  details.adv .body { padding: 0 16px 16px; }
+  .hint { margin: 12px 0 0; color: var(--muted); font-size: 0.88rem; }
+  .note { margin: 12px 0 0; font-size: 0.9rem; padding: 8px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); }
+  .note[data-kind="info"] { background: var(--paper); color: var(--muted); }
+  .stack { margin-top: 12px; }
   [hidden] { display: none !important; }
   footer { color: var(--muted); font-size: 0.82rem; text-align: center; margin-top: 8px; }
   @media (prefers-reduced-motion: no-preference) {
@@ -148,7 +166,6 @@
 <body>
 <main>
   <h1>Regulación de sembradora</h1>
-  <p class="sub">Escribí solo en las celdas azules.</p>
 
   <section class="card" aria-labelledby="h-dist">
     <h2 id="h-dist">Distancia entre surcos</h2>
@@ -170,6 +187,28 @@
 
   <!-- ============ SEMILLA ============ -->
   <div id="panel-sem">
+    <details class="card adv" id="adv">
+      <summary>
+        <span>Germinación y pureza</span>
+        <span class="right"><span class="vc" id="vcBadge" data-state="">VC 100 %</span></span>
+      </summary>
+      <div class="body">
+        <div class="grid2" style="margin-top:0">
+          <div class="field">
+            <label for="gerP">Germinación</label>
+            <input id="gerP" data-k="gerP" inputmode="decimal" autocomplete="off" placeholder="100">
+            <span class="suf">%</span>
+          </div>
+          <div class="field">
+            <label for="impP">Impurezas</label>
+            <input id="impP" data-k="impP" inputmode="decimal" autocomplete="off" placeholder="0">
+            <span class="suf">%</span>
+          </div>
+        </div>
+        <p class="hint">Valor cultural (VC) = germinación × pureza. Con germinación 100 % e impurezas 0 %, el VC es 100 % y no cambia nada. La germinación aumenta las semillas a sembrar; las impurezas aumentan los kg de semilla.</p>
+      </div>
+    </details>
+
     <section class="card" aria-labelledby="h-so">
       <h2 id="h-so">Objetivo de semilla</h2>
       <div class="seg" data-tog="sUnit" role="group" aria-label="Unidad del objetivo">
@@ -181,17 +220,15 @@
         <input id="sObj" data-k="sObj" inputmode="decimal" autocomplete="off" placeholder="0">
         <span class="suf" id="sObjS">sem/ha</span>
       </div>
-      <div class="grid2">
-        <div class="field">
-          <label for="pms">Peso de mil</label>
-          <input id="pms" data-k="pms" inputmode="decimal" autocomplete="off" placeholder="0">
-          <span class="suf">g</span>
-        </div>
-        <div class="field">
-          <label for="sMetros">Metros a sembrar</label>
-          <input id="sMetros" data-k="sMetros" inputmode="decimal" autocomplete="off" placeholder="100">
-          <span class="suf">m</span>
-        </div>
+      <div class="field stack">
+        <label for="pms">Peso de mil semillas</label>
+        <input id="pms" data-k="pms" inputmode="decimal" autocomplete="off" placeholder="0">
+        <span class="suf">g</span>
+      </div>
+      <div class="field stack">
+        <label for="sMetros">Metros en los que querés contar semillas</label>
+        <input id="sMetros" data-k="sMetros" inputmode="decimal" autocomplete="off" placeholder="5">
+        <span class="suf">m</span>
       </div>
       <dl class="res">
         <div><dt>Semillas por hectárea</dt><dd id="o_sHa">—</dd></div>
@@ -199,6 +236,8 @@
         <div><dt id="o_sNL">Semillas en 100 m</dt><dd id="o_sN">—</dd></div>
         <div><dt>Semilla en kg/ha</dt><dd id="o_sKg">—</dd></div>
       </dl>
+      <p class="note" id="vcNote" hidden></p>
+      <p class="note" id="need_s" hidden></p>
     </section>
 
     <section class="card" aria-labelledby="h-sm">
@@ -219,7 +258,9 @@
         <div><dt>Semillas por metro</dt><dd id="m_sM">—</dd></div>
         <div><dt>Semillas por hectárea</dt><dd id="m_sHa">—</dd></div>
         <div><dt>Semilla en kg/ha</dt><dd id="m_sKg">—</dd></div>
+        <div id="m_sPlRow" hidden><dt>Plantas esperadas por hectárea</dt><dd id="m_sPl">—</dd></div>
       </dl>
+      <p class="note" id="need_sm" hidden></p>
       <div class="verdict" id="v_s" data-state="idle" role="status">
         <div class="pct">—</div>
         <div><div class="t"></div><div class="d"></div></div>
@@ -252,6 +293,7 @@
         <div><dt>Gramos por metro de surco</dt><dd id="o_fG">—</dd></div>
         <div><dt id="o_fNL">Gramos en 100 m</dt><dd id="o_fN">—</dd></div>
       </dl>
+      <p class="note" id="need_f" hidden></p>
     </section>
 
     <section class="card" aria-labelledby="h-fm">
@@ -272,6 +314,7 @@
         <div><dt>Gramos por metro de surco</dt><dd id="m_fG">—</dd></div>
         <div><dt>Fertilizante por hectárea</dt><dd id="m_fKg">—</dd></div>
       </dl>
+      <p class="note" id="need_fm" hidden></p>
       <div class="verdict" id="v_f" data-state="idle" role="status">
         <div class="pct">—</div>
         <div><div class="t"></div><div class="d"></div></div>
@@ -300,12 +343,21 @@
 
   const defaults = {
     dist: '', tol: '5', tab: 'sem',
-    sUnit: 'ha', sObj: '', pms: '', sMetros: '100', sCont: '', sContM: '1',
+    sUnit: 'ha', sObj: '', pms: '', sMetros: '5', gerP: '100', impP: '0', sCont: '', sContM: '1',
     fUnit: 'kgha', fObj: '', fMetros: '100', fGr: '', fGrM: '1'
   };
   let S = { ...defaults };
   try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  // Estos valores siempre arrancan en su default y no se guardan.
+  const VOLATILE = ['sMetros', 'gerP', 'impP'];
+  VOLATILE.forEach(k => { S[k] = defaults[k]; });
+  const save = () => {
+    try {
+      const keep = { ...S };
+      VOLATILE.forEach(k => delete keep[k]);
+      localStorage.setItem(KEY, JSON.stringify(keep));
+    } catch (e) {}
+  };
 
   const $ = id => document.getElementById(id);
   const num = v => {
@@ -351,6 +403,15 @@
   document.querySelectorAll('[data-tab]').forEach(b => {
     b.addEventListener('click', () => { S.tab = b.dataset.tab; save(); render(); window.scrollTo({ top: 0 }); });
   });
+
+  const NEED_DIST = 'Elegí la distancia entre surcos (arriba) para que se calcule.';
+  const NEED_PMS = 'Cargá el peso de mil semillas para ver los kg/ha.';
+  function need(id, msg, kind) {
+    const el = $(id);
+    el.hidden = !msg;
+    el.textContent = msg || '';
+    el.dataset.kind = kind || 'warn';
+  }
 
   function verdict(id, real, obj, unitLabel) {
     const el = $(id);
@@ -398,19 +459,38 @@
     $('fObjL').textContent = fKgMode ? 'Fertilizante por hectárea' : 'Gramos por metro de surco';
     $('fObjS').textContent = fKgMode ? 'kg/ha' : 'g/m';
 
+    // ===== Valor cultural (germinación y pureza)
+    const g = String(S.gerP).trim() === '' ? 100 : num(S.gerP);
+    const imp = String(S.impP).trim() === '' ? 0 : num(S.impP);
+    const vcOk = g != null && imp != null && g > 0 && g <= 100 && imp >= 0 && imp < 100;
+    const Gf = vcOk ? g / 100 : null;              // fracción que germina
+    const Pf = vcOk ? 1 - imp / 100 : null;        // pureza
+    const vc = vcOk ? g * (100 - imp) / 100 : null;
+    const badge = $('vcBadge');
+    badge.textContent = vcOk ? `VC ${fmt(vc, vc % 1 ? 1 : 0)} %` : 'Revisá los valores';
+    badge.dataset.state = !vcOk ? 'bad' : vc < 100 ? 'warn' : '';
+    const note = $('vcNote');
+    note.hidden = vcOk && vc >= 100;
+    note.textContent = vcOk
+      ? `Ajustado por valor cultural: VC ${fmt(vc, vc % 1 ? 1 : 0)} % (germinación ${fmt(g, g % 1 ? 1 : 0)} %, impurezas ${fmt(imp, imp % 1 ? 1 : 0)} %).`
+      : 'Germinación debe ser mayor que 0 y hasta 100 %, e impurezas menor que 100 %. Sin eso no se calculan los resultados de semilla.';
+
     // ===== SEMILLA: objetivo
     const pms = pos(num(S.pms));
     const sN = pos(num(S.sMetros));
     const sv = num(S.sObj);
-    let sHa = null, sM = null;
+    let objHa = null, objM = null;                 // objetivo tal cual lo cargaste
     if (sv != null && mha) {
-      if (sHaMode) { sHa = sv; sM = sv / mha; } else { sM = sv; sHa = sv * mha; }
+      if (sHaMode) { objHa = sv; objM = sv / mha; } else { objM = sv; objHa = sv * mha; }
     }
+    // Lo que hay que sembrar: la germinación sube las semillas
+    const sHa = objHa != null && Gf ? objHa / Gf : null;
+    const sM = objM != null && Gf ? objM / Gf : null;
     put('o_sHa', withUnit(sHa, 'sem/ha', 0));
     put('o_sM', withUnit(sM, 'sem/m'));
     $('o_sNL').textContent = `Semillas en ${sN ? fmt(sN, sN % 1 ? 1 : 0) : '…'} m`;
     put('o_sN', sM != null && sN ? withUnit(sM * sN, 'sem') : '—');
-    put('o_sKg', sHa != null && pms ? withUnit(sHa * pms / 1e6, 'kg/ha', 1) : '—');
+    put('o_sKg', sHa != null && pms && Pf ? withUnit(sHa * pms / Pf / 1e6, 'kg/ha', 1) : '—');
 
     // ===== SEMILLA: medido
     const cont = num(S.sCont), contM = pos(num(S.sContM));
@@ -418,8 +498,18 @@
     if (cont != null && contM && mha) { rM = cont / contM; rHa = rM * mha; }
     put('m_sM', withUnit(rM, 'sem/m'));
     put('m_sHa', withUnit(rHa, 'sem/ha', 0));
-    put('m_sKg', rHa != null && pms ? withUnit(rHa * pms / 1e6, 'kg/ha', 1) : '—');
+    put('m_sKg', rHa != null && pms && Pf ? withUnit(rHa * pms / Pf / 1e6, 'kg/ha', 1) : '—');
+    $('m_sPlRow').hidden = !(vcOk && g < 100);
+    put('m_sPl', rHa != null && Gf ? withUnit(rHa * Gf, 'pl/ha', 0) : '—');
     verdict('v_s', rHa, pos(sHa), 'sem/ha');
+    need('need_s',
+      !mha && (sv != null) ? NEED_DIST
+      : sHa != null && !pms ? NEED_PMS : '',
+      !mha ? 'warn' : 'info');
+    need('need_sm',
+      !mha && cont != null ? NEED_DIST
+      : rHa != null && !pms ? NEED_PMS : '',
+      !mha ? 'warn' : 'info');
 
     // ===== FERTILIZANTE: objetivo
     const fN = pos(num(S.fMetros));
@@ -440,6 +530,8 @@
     put('m_fG', withUnit(rG, 'g/m'));
     put('m_fKg', withUnit(rKg, 'kg/ha', 1));
     verdict('v_f', rKg, pos(fKg), 'kg/ha');
+    need('need_f', !mha && fv != null ? NEED_DIST : '');
+    need('need_fm', !mha && gr != null ? NEED_DIST : '');
   }
 
   render();
